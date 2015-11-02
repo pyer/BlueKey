@@ -1,16 +1,15 @@
 # BlueKey
-Bootable USB key
-Of course, such a key boots on Linux. I call it Blue Key because I test this project with a blue key.
+This project describes how to make a Linux bootable USB key. I call it Blue Key because I test this project with a blue key.
 
-### Requirements
+#### Requirements
 Creating a Blue USB key on Ubuntu requires parted, syslinux and xz-utils packages.
 gzip can be used instead of xz. I'll check it later.
 
 
-### How to list USB keys ?
-ls -l /dev/disk/by-id/*usb*
+## How to list USB keys ?
+`ls -l /dev/disk/by-id/*usb*`
 
-### How to create a bootable USB key ?
+## How to create a bootable USB key ?
 Assume USB key is /dev/sdb device and current working directory is where this README is.
 
 #### Format the key
@@ -38,7 +37,7 @@ cp syslinux.cfg /dev/sdb1
 cp vmlinuz      /dev/sdb1
 cp initrd.img   /dev/sdb1
 
-### How to unzip initrd.img ?
+## How to unzip initrd.img ?
 cd initrd
 xzcat ../initrd.img | cpio -idm
 
