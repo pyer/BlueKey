@@ -1,0 +1,20 @@
+#!/bin/sh
+set -x
+version="$(uname -r)"
+cd initrd
+mkdir lib/firmware
+cp    /lib/firmware/phanfw.bin lib/firmware/
+cp -r /lib/firmware/$version   lib/firmware/
+mkdir lib/modules
+mkdir lib/modules/$version
+cp    /lib/modules/$version/modules.* lib/modules/$version/
+cp -r /lib/modules/$version/kernel    lib/modules/$version/
+
+find . | cpio --quiet -o -H newc | xz -c -9 --check=crc32 >../initrd.img
+
+rm -r lib/firmware
+rm -r lib/modules
+cd ..
+# Media target may change
+#cp /boot/vmlinuz-$version /media/pba/PBA/vmlinuz
+mv initrd.img /media/pba/PBA/

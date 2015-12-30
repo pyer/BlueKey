@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+mount -t sysfs    -o nodev,noexec,nosuid sysfs /sys
+mount -t proc     -o nodev,noexec,nosuid proc  /proc
+mount -t devtmpfs -o mode=0755 udev /dev
+mkdir /dev/pts
+mount -t devpts -o noexec,nosuid,gid=5,mode=0620 devpts /dev/pts
+mount -t tmpfs -o "noexec,nosuid,size=10%,mode=0755" tmpfs /run
+#
+echo "Load modules"
+#for _MODULE in atl1 atl1c atl2 bnx2 bnx2x crc32c dm-mod dm-mirror dm-raid45 linear multipath raid0 raid1 raid456 raid5 raid6 raid10
+for _MODULE in dm-mirror linear multipath raid0 raid1 raid456 raid5 raid6 raid10
+do
+  modprobe -q -b ${_MODULE}
+done
+# Default values
+KEYMAP=""
+FB="uvesafb"
+OPTS="mode_option=1024x768-32"
+# Parsing options
+for x in $(cat /proc/cmdline); do
+	case ${x} in
+	keymap=*)
+		KEYMAP=${x#*=}
+		;;
+	video=*)
+		FB=${x#*=}
+		FB="${FB%%:*}"
+		OPTS="${x#*:}"
+		;;
+	esac
+done
+# 
+echo "Set video ${FB} mode ${OPTS}"
+modprobe -q ${FB} "mode_option=${OPTS}"
+echo "Load font"
+loadfont  </lib/fonts/Uni2-Fixed16.psf
+echo "Load custom keymap ${KEYMAP}"
+[ "${KEYMAP}" == "" ] || loadkmap </lib/keymaps/${KEYMAP}.kmap
+# Infinite loop because I don't want a kernel panic if shell exit
+while true
+do
+  setsid cttyhack sh -i -l
+done
