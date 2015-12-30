@@ -1,5 +1,14 @@
 #!/bin/sh
 #
+# Create empty directories
+echo "Load kernel"
+mkdir /media
+mkdir /proc
+mkdir /run
+mkdir /sys
+mkdir /tmp
+mkdir /var
+# Mount file systems
 mount -t sysfs    -o nodev,noexec,nosuid sysfs /sys
 mount -t proc     -o nodev,noexec,nosuid proc  /proc
 mount -t devtmpfs -o mode=0755 udev /dev
@@ -33,10 +42,12 @@ done
 # 
 echo "Set video ${FB} mode ${OPTS}"
 modprobe -q ${FB} "mode_option=${OPTS}"
-echo "Load font"
+echo "Load font Uni2-Fixed16"
 loadfont  </lib/fonts/Uni2-Fixed16.psf
-echo "Load custom keymap ${KEYMAP}"
+echo "Load ${KEYMAP} keymap"
 [ "${KEYMAP}" == "" ] || loadkmap </lib/keymaps/${KEYMAP}.kmap
+# Message of the day
+# cat /etc/motd
 # Infinite loop because I don't want a kernel panic if shell exit
 while true
 do

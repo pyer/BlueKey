@@ -10,10 +10,14 @@ mkdir lib/modules/$version
 cp    /lib/modules/$version/modules.* lib/modules/$version/
 cp -r /lib/modules/$version/kernel    lib/modules/$version/
 
+mkdir lib64
+cp /lib64/ld-linux-x86-64.so.2 lib64/
+
 find . | cpio --quiet -o -H newc | xz -c -9 --check=crc32 >../initrd.img
 
 rm -r lib/firmware
 rm -r lib/modules
+rm -r lib64
 cd ..
 # Media target may change
 #cp /boot/vmlinuz-$version /media/pba/PBA/vmlinuz
