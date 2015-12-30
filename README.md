@@ -58,3 +58,11 @@ cd initrd
 xzcat ../initrd.img | cpio -idm
 ```
 
+## How to create keyboard map
+```
+sudo loadkeys -b fr.map >initrd/lib/keymaps/fr.kmap
+```
+then init will load the map with
+```
+loadkmap </lib/keymaps/fr.kmap
+```
