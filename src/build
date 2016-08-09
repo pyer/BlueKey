@@ -1,6 +1,15 @@
 #!/bin/sh
-set -x
 version="$(uname -r)"
+# Media target may change
+target="/media/pba/PBA"
+
+if [ ! -d $target ]
+then
+  echo "ERROR: unknown target directory"
+  exit 1
+fi
+# Let's go
+set -x
 cd initrd
 mkdir lib/firmware
 cp    /lib/firmware/phanfw.bin lib/firmware/
@@ -15,6 +24,5 @@ find . | cpio --quiet -o -H newc | xz -c -9 --check=crc32 >../initrd.img
 rm -r lib/firmware
 rm -r lib/modules
 cd ..
-# Media target may change
-#cp /boot/vmlinuz-$version /media/pba/PBA/vmlinuz
-mv initrd.img /media/pba/PBA/
+cp /vmlinuz   $target/
+mv initrd.img $target/
