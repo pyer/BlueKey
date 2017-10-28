@@ -11,50 +11,39 @@ gzip can be used instead of xz. I'll check it later.
 
 `ls -l /dev/disk/by-id/*usb*`
 
-## How to create a bootable USB key ?
+## How to list USB devices ?
 
-Assume USB key is /dev/sdb device and current working directory is where this README is.
+`lsusb`
 
-Format the key
+## How to list block devices ?
+
+`lsblk`
+
+## How to list partitions of /dev/sdb ?
+
+`sudo parted -s /dev/sdb print`
+
+## How to format /dev/sdb ?
 
 `sudo parted /dev/sdb mkpart primary fat32 0% 100%`
 
-Create a file system
+## How to create a file system on /dev/sdb1 ?
 
 `sudo mkfs.vfat -F 32 -n PBA /dev/sdb1`
 
-Install syslinux boot loader
+## How to make USB key /dev/sdb bootable ?
 
-`sudo syslinux -i /dev/sdb1`
+`sudo ./make_boot /dev/sdb1`
 
-Install Master Boot Record
+## How to create a custom initrd.img ?
 
-`sudo dd conv=notrunc bs=440 count=1 if=mbr.bin of=/dev/sdb`
-
-Set partition bootable
-
-`sudo parted /dev/sdb set 1 boot on`
-
-Create initrd.img
-
-```
-cd initrd
-find . | cpio --quiet -o -H newc | xz -c -9 --check=crc32 >../initrd.img
-cd ..
-```
-
-Copy Linux system to Blue key
-
-```
-cp syslinux.cfg /dev/sdb1
-cp vmlinuz      /dev/sdb1
-cp initrd.img   /dev/sdb1
-```
+`sudo ./make_initrd`
 
 ## How to unzip initrd.img ?
 
 ```
-cd initrd
+mkdir tmp_initrd
+cd tmp_initrd
 xzcat ../initrd.img | cpio -idm
 ```
 
