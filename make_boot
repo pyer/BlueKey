@@ -183,8 +183,9 @@ echo "--------------------------------------------"
 mount_point="/mnt"
 mount $target_part $mount_point
 echo "Copying system files to $target_part"
-cp /vmlinuz $mount_point/
-cp initrd.img $mount_point/
+cp /vmlinuz     $mount_point/
+cp initrd.img   $mount_point/
+cp syslinux.cfg $mount_point/
 echo "Running: syslinux --install \"$target_part\""
 syslinux --install "$target_part"
 echo "--------------------------------------------"

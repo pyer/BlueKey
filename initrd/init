@@ -11,7 +11,7 @@ mkdir /var
 # Mount file systems
 mount -t sysfs    -o nodev,noexec,nosuid sysfs /sys
 mount -t proc     -o nodev,noexec,nosuid proc  /proc
-mount -t devtmpfs -o mode=0755 udev /dev
+mount -t devtmpfs -o mode=0755 mdev /dev
 mkdir /dev/pts
 mount -t devpts -o noexec,nosuid,gid=5,mode=0620 devpts /dev/pts
 mount -t tmpfs -o "noexec,nosuid,size=10%,mode=0755" tmpfs /run
