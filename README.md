@@ -29,7 +29,7 @@ gzip can be used instead of xz. I'll check it later.
 
 ## How to create a file system on /dev/sdb1 ?
 
-`sudo mkfs.vfat -F 32 -n PBA /dev/sdb1`
+`sudo mkfs.vfat -F 32 -n BLEUE /dev/sdb1`
 
 ## How to make USB key /dev/sdb bootable ?
 

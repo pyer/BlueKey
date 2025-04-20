@@ -137,7 +137,7 @@ echo "--------------------------------------------"
 parted -s $target_disk print
 echo "--------------------------------------------"
 echo "Create file system"
-mkfs.vfat -F32 -n BLUE $target_part
+mkfs.vfat -F32 -n BLEUE $target_part
 
 echo "--------------------------------------------"
 # 2. Bootable ?
