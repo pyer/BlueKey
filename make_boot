@@ -112,7 +112,6 @@ if [ -z "$(echo $target_part | grep -iE "/dev/[hsu][bd][a-z]+[[:digit:]]+")" ]; 
   ERROR "'$target_part' is NOT a valid partition name"
 fi
 
-#
 pt_dev="$(basename $target_part)"  # e.g. sdc1
 hd_dev="$(get_diskname $target_part)"   # e.g. sdc
 target_disk="/dev/$hd_dev"  # e.g. /dev/sdc
@@ -129,31 +128,16 @@ if [ -z "$(LC_ALL=C parted -s $target_disk print | grep -iE "^Partition Table:" 
   exit 1
 fi
 
-#
 if ! grep -qEw $pt_dev /proc/partitions; then
   ERROR "$target_part was NOT found in /proc/partitions"
 fi
 
-#
 echo "This command will install MBR and syslinux bootloader on $target_disk"
 echo "--------------------------------------------"
 parted -s $target_disk print
 echo "--------------------------------------------"
-echo "Check if $target_part is a FAT partition"
-LC_ALL=C blkid -c /dev/null $target_part | grep -o -E '\<TYPE="[^[:space:]]*"($|[[:space:]]+)' >blkinfo
-TYPE=""
-. blkinfo
-echo "File system of $target_part is $TYPE"
-rm blkinfo
-case "$TYPE" in
-  fat16|fat32|vfat)
-     echo "$target_part is a valid FAT file system."
-     ;;
-#  ntfs|ext[2-4]|btrfs|xfs|ufs|ffs) mode="extlinux";;
-  *)                   
-     ERROR "$target_part doesn't look like a valid FAT file system."
-     ;;
-esac
+echo "Create file system"
+mkfs.vfat -F32 -n BLUE $target_part
 
 echo "--------------------------------------------"
 # 2. Bootable ?
@@ -172,7 +156,7 @@ fi
 
 # 3. Install MBR
 echo "--------------------------------------------"
-echo "Installing Master Boot Record on $target_disk"
+echo "Install Master Boot Record on $target_disk"
 cat /usr/lib/syslinux/mbr/mbr.bin >$target_disk
 if [ "$?" -ne 0 ]; then
   ERROR "Failed to write bootloader into MBR of $target_disk"

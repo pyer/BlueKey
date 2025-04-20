@@ -1,18 +1,20 @@
 #!/bin/sh
 echo "Building initrd.img ..."
-version="$(uname -r)"
-set -x
-cd initrd
-mkdir lib/firmware
-cp    /lib/firmware/phanfw.bin lib/firmware/
-cp -r /lib/firmware/$version   lib/firmware/
-mkdir lib/modules
-mkdir lib/modules/$version
-cp    /lib/modules/$version/modules.* lib/modules/$version/
-cp -r /lib/modules/$version/kernel    lib/modules/$version/
-
-find . | cpio --quiet -o -H newc | xz -c -9 --check=crc32 >../initrd.img
-
-rm -r lib/firmware
-rm -r lib/modules
+rm -rf tmp
+cp -ar initrd tmp
+cd tmp
+echo "Copying libraries"
+cd lib
+cp /lib/ld-linux.so.2 .
+cp /lib/i386-linux-gnu/libblkid.so.1 .
+cp /lib/i386-linux-gnu/libcrypto.so.3 .
+cp /lib/i386-linux-gnu/libc.so.6 .
+cp /lib/i386-linux-gnu/libkmod.so.2 .
+cp /lib/i386-linux-gnu/liblzma.so.5 .
+cp /lib/i386-linux-gnu/libpcre2-8.so.0 .
+cp /lib/i386-linux-gnu/libresolv.so.2 .
+cp /lib/i386-linux-gnu/libselinux.so.1 .
+cp /lib/i386-linux-gnu/libzstd.so.1 .
 cd ..
+echo "Creating image"
+#find . | LC_ALL=C sort | cpio --quiet -R root:root -o -H newc | gzip -n >../initrd.img

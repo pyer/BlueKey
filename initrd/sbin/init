@@ -1,0 +1,68 @@
+#!/bin/sh
+
+# Default PATH differs between shells, and is not automatically exported
+# by klibc dash.  Make it consistent.
+export PATH=/sbin:/bin
+
+echo "Loading, please wait..."
+sleep 6
+# Default values
+KEYMAP="en"
+
+# Create empty directories
+[ -d /dev ] || mkdir -m 0755 /dev
+[ -d /proc ] || mkdir /proc
+[ -d /run ] || mkdir /run
+[ -d /sys ] || mkdir /sys
+[ -d /tmp ] || mkdir /tmp
+[ -d /var ] || mkdir /var
+
+mkdir -p /var/lock
+mkdir -p /var/log
+
+mount -t proc -o nodev,noexec,nosuid proc /proc
+mount -t tmpfs -o nodev,noexec,nosuid tmpfs /run
+mount -t sysfs -o nodev,noexec,nosuid sysfs /sys
+
+# Note that this only becomes /dev on the real filesystem if udev's scripts
+# are used; which they will be, but it's worth pointing out
+mount -t devtmpfs -o nosuid,mode=0755 udev /dev
+
+# Prepare the /dev directory
+[ ! -h /dev/fd ] && ln -s /proc/self/fd /dev/fd
+[ ! -h /dev/stdin ] && ln -s /proc/self/fd/0 /dev/stdin
+[ ! -h /dev/stdout ] && ln -s /proc/self/fd/1 /dev/stdout
+[ ! -h /dev/stderr ] && ln -s /proc/self/fd/2 /dev/stderr
+
+mkdir /dev/pts
+mount -t devpts -o noexec,nosuid,gid=5,mode=0620 devpts /dev/pts || true
+
+echo "Set devices with udev"
+if [ -w /sys/kernel/uevent_helper ]; then
+	echo > /sys/kernel/uevent_helper
+fi
+udevd --daemon --resolve-names=never
+udevadm trigger --action=add
+udevadm settle
+
+echo "Parsing options"
+for x in $(cat /proc/cmdline); do
+	case ${x} in
+	keymap=*)
+		KEYMAP=${x#*=}
+		;;
+	esac
+done
+
+#echo "Load font Uni2-Fixed16"
+#loadfont  </lib/fonts/Uni2-Fixed16.psf
+echo "Load ${KEYMAP} keymap"
+loadkmap </lib/keymaps/${KEYMAP}.kmap
+# Message of the day
+cat /etc/motd
+export PS1="> "
+# Infinite loop because I don't want a kernel panic if shell exit
+while true
+do
+  setsid -c sh -i -l
+done
