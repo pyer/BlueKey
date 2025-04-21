@@ -1,9 +1,12 @@
 # BlueKey
 This project describes how to make a Linux bootable USB key. I call it Blue Key because I test this project with a blue key.
 
+Tested on Linux 32 bits AntiX (5.10.197-antix.1-486-smp)
+
+
 **Requirements**
 
-Creating a Blue USB key on Ubuntu requires parted, syslinux and xz-utils packages.
+Creating a Blue USB key requires parted, syslinux and xz-utils packages.
 gzip can be used instead of xz. I'll check it later.
 
 
