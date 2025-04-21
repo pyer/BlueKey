@@ -55,13 +55,6 @@ USAGE() {
    echo "To make \"/dev/sdg1\" bootable on GNU/Linux:"
 }
 
-# Check if root or not
-check_if_root() {
-   if [ ! "$UID" = "0" ]; then
-     ERROR "You need to run this script '$prog' as root."
-   fi
-}
-
 check_if_exist() {
     if ! type $1 &>/dev/null; then
       ERROR "Program '$1' was not found on this GNU/Linux system. Please install it."
@@ -88,18 +81,14 @@ get_part_number() {
 
   echo $num
 } # end of get_part_number
-#
 
 #
 #########################################
 # Main
 #########################################
 #
-
-check_if_root
 check_if_exist syslinux
 check_if_exist parted
-check_if_exist blkid
 
 # Check if device is defined in parameter
 if [ -z "$target_part" ]
@@ -118,10 +107,10 @@ target_disk="/dev/$hd_dev"  # e.g. /dev/sdc
 pt_dev_no="$(get_part_number $target_part)"  # e.g. 1
 
 # If the destination disk is not MBR partition table (e.g. it's GPT), exit. This program only works for MBR disk.
-if [ -z "$(LC_ALL=C parted -s $target_disk print | grep -iE "^Partition Table:" | grep -iE "msdos")" ]; then
+if [ -z "$(LC_ALL=C sudo parted -s $target_disk print | grep -iE "^Partition Table:" | grep -iE "msdos")" ]; then
   [ "$BOOTUP" = "color" ] && $SETCOLOR_FAILURE
   echo "The partition table of $target_disk is not for MBR (Master Boot Record). Its layout is:"
-  LC_ALL=C parted -s $target_disk print
+  LC_ALL=C sudo parted -s $target_disk print
   [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
   echo "This program is for making a bootable disk with MBR partition table."
   echo "For GPT disk, there is no need to run this program. Just make sure the partition is FAT32 with ID=ef00 and all the files are copied on that. That's all."
@@ -134,30 +123,25 @@ fi
 
 echo "This command will install MBR and syslinux bootloader on $target_disk"
 echo "--------------------------------------------"
-parted -s $target_disk print
+sudo parted -s $target_disk print
 echo "--------------------------------------------"
 echo "Create file system"
-mkfs.vfat -F32 -n BLEUE $target_part
+sudo mkfs.vfat -F32 -n BLEUE $target_part
 
 echo "--------------------------------------------"
-# 2. Bootable ?
-echo "Check if $target_part is bootable"
+# 2. Make target bootable
+echo "Make $target_part bootable"
 device_no="$(get_part_number $target_part)"  # e.g. 1
-LANG=C parted -s $target_disk print | egrep "^ $device_no .* boot$"
-if [ "$?" -eq 0 ]
-then
-  echo "$target_part is already marked as bootable"
-else
-  echo "$target_part is not marked as bootable"
-  parted -s $target_disk print
-  echo "Running: parted -s $target_disk set $device_no boot on"
-  parted -s $target_disk set $device_no boot on
+#echo "Running: sudo parted -s $target_disk set $device_no boot on"
+sudo parted -s $target_disk set $device_no boot on
+if [ "$?" -ne 0 ]; then
+  ERROR "Failed to make partition $device_no of $target_disk bootable"
 fi
 
 # 3. Install MBR
 echo "--------------------------------------------"
 echo "Install Master Boot Record on $target_disk"
-cat /usr/lib/syslinux/mbr/mbr.bin >$target_disk
+sudo dd if=/usr/lib/syslinux/mbr/mbr.bin of=$target_disk
 if [ "$?" -ne 0 ]; then
   ERROR "Failed to write bootloader into MBR of $target_disk"
 fi
@@ -165,14 +149,14 @@ fi
 # 4. Install Linux system
 echo "--------------------------------------------"
 mount_point="/mnt"
-mount $target_part $mount_point
+sudo mount $target_part $mount_point
 echo "Copying system files to $target_part"
-cp vmlinuz      $mount_point/
-cp initrd.img   $mount_point/
-cp syslinux.cfg $mount_point/
+sudo cp vmlinuz      $mount_point/
+sudo cp initrd.img   $mount_point/
+sudo cp syslinux.cfg $mount_point/
 echo "Running: syslinux --install \"$target_part\""
-syslinux --install "$target_part"
+sudo syslinux --install "$target_part"
 echo "--------------------------------------------"
 echo "Mounted point of $target_part is $mount_point"
 ls -l $mount_point
-umount $target_part
+sudo umount $target_part

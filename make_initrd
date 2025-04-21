@@ -3,18 +3,43 @@ echo "Building initrd.img ..."
 rm -rf tmp
 cp -ar initrd tmp
 cd tmp
+echo "Copying binaries"
+cd bin
+cp /bin/lsblk .
+cp /bin/lsusb .
+cp /bin/udevadm .
+cp /sbin/udevd .
+cd ..
 echo "Copying libraries"
 cd lib
 cp /lib/ld-linux.so.2 .
 cp /lib/i386-linux-gnu/libblkid.so.1 .
-cp /lib/i386-linux-gnu/libcrypto.so.3 .
 cp /lib/i386-linux-gnu/libc.so.6 .
+cp /lib/i386-linux-gnu/libcrypto.so.3 .
+cp /lib/i386-linux-gnu/libgcrypt.so.20 .
+cp /lib/i386-linux-gnu/libgpg-error.so.0 .
 cp /lib/i386-linux-gnu/libkmod.so.2 .
 cp /lib/i386-linux-gnu/liblzma.so.5 .
+cp /lib/i386-linux-gnu/libmount.so.1 .
+cp /lib/i386-linux-gnu/libmtp.so.9 .
 cp /lib/i386-linux-gnu/libpcre2-8.so.0 .
+cp /lib/i386-linux-gnu/libpthread.so.0 .
 cp /lib/i386-linux-gnu/libresolv.so.2 .
 cp /lib/i386-linux-gnu/libselinux.so.1 .
+cp /lib/i386-linux-gnu/libsmartcols.so.1 .
+cp /lib/i386-linux-gnu/libudev.so.1 .
+cp /lib/i386-linux-gnu/libusb-1.0.so.0 .
 cp /lib/i386-linux-gnu/libzstd.so.1 .
+echo "Copying modules"
+# TO DO: remove useless modules
+cp -r /lib/modules .
+mkdir udev
+# TO DO: remove error message
+cp /lib/udev/* udev/
 cd ..
+echo "Creating share"
+mkdir -p usr/share
+cp -r /usr/share/tlp usr/share/
 echo "Creating image"
 find . | LC_ALL=C sort | cpio --quiet -R root:root -o -H newc | gzip -n >../initrd.img
+

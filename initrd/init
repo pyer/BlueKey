@@ -2,7 +2,7 @@
 
 # Default PATH differs between shells, and is not automatically exported
 # by klibc dash.  Make it consistent.
-export PATH=/sbin:/bin
+export PATH=/bin
 
 echo "Loading, please wait..."
 sleep 6
@@ -37,11 +37,20 @@ mount -t devtmpfs -o nosuid,mode=0755 udev /dev
 mkdir /dev/pts
 mount -t devpts -o noexec,nosuid,gid=5,mode=0620 devpts /dev/pts || true
 
+echo "Initializing random number generator"
+# Seed the RNG with date and time.
+date +%s >/dev/urandom
+
 echo "Set devices with udev"
 if [ -w /sys/kernel/uevent_helper ]; then
 	echo > /sys/kernel/uevent_helper
 fi
 udevd --daemon --resolve-names=never
+echo "Synthesizing the initial hotplug events (subsystems)"
+udevadm trigger --type=subsystems --action=add
+echo "Synthesizing the initial hotplug events (devices)"
+udevadm trigger --type=devices --action=add
+echo "Waiting for /dev to be fully populated"
 udevadm trigger --action=add
 udevadm settle
 
@@ -58,6 +67,9 @@ done
 #loadfont  </lib/fonts/Uni2-Fixed16.psf
 echo "Load ${KEYMAP} keymap"
 loadkmap </lib/keymaps/${KEYMAP}.kmap
+
+# Hostname
+hostname bleue
 # Message of the day
 cat /etc/motd
 export PS1="> "

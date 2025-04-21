@@ -1,4 +1,4 @@
-PATH='/bin:/sbin'
+PATH='/bin'
 # some more ls aliases
-alias ll='ls -alF'
-#alias ll='ls -hlF'
+alias la='ls -A'
+alias ll='ls -lh'
