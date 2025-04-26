@@ -158,5 +158,5 @@ echo "Running: syslinux --install \"$target_part\""
 sudo syslinux --install "$target_part"
 echo "--------------------------------------------"
 echo "Mounted point of $target_part is $mount_point"
-ls -l $mount_point
+ls -lh $mount_point
 sudo umount $target_part

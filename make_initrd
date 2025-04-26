@@ -31,14 +31,12 @@ cp /lib/i386-linux-gnu/libudev.so.1 .
 cp /lib/i386-linux-gnu/libusb-1.0.so.0 .
 cp /lib/i386-linux-gnu/libzstd.so.1 .
 echo "Copying modules"
-# TO DO: remove useless modules
 cp -r /lib/modules .
 mkdir udev
 # TO DO: remove error message
 cp /lib/udev/* udev/
 cd ..
-echo "Creating share"
-mkdir -p usr/share
+echo "Copying tlp"
 cp -r /usr/share/tlp usr/share/
 echo "Creating image"
 find . | LC_ALL=C sort | cpio --quiet -R root:root -o -H newc | gzip -n >../initrd.img
