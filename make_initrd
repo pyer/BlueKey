@@ -36,8 +36,6 @@ mkdir udev
 # TO DO: remove error message
 cp /lib/udev/* udev/
 cd ..
-echo "Copying tlp"
-cp -r /usr/share/tlp usr/share/
 echo "Creating image"
 find . | LC_ALL=C sort | cpio --quiet -R root:root -o -H newc | gzip -n >../initrd.img
 
